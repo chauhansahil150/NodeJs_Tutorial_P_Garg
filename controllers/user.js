@@ -8,6 +8,7 @@ async function handleUserSignUp(req, res) {
         name,
         email,
         password,
+        role,
     });
     return res.redirect('/');
 }
@@ -18,8 +19,9 @@ async function handleUserLogIn(req, res) {
         LogInError: "invalid user name or password",
     })
     const token = setUser(user);
+    res.cookie('token', token);
    
-    return res.json({ token });
+    return res.redirect("/");
 }
 
 module.exports = {
