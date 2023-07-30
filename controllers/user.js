@@ -17,9 +17,9 @@ async function handleUserLogIn(req, res) {
     if (!user) return res.render('login', {
         LogInError: "invalid user name or password",
     })
-    sessionId = uuidv4(); // creates random unique id
-    setUser(sessionId, user); 
-    res.cookie('uid', sessionId); // setting cookie with name 'uid'
+    // sessionId = uuidv4(); // creates random unique id
+    const token = setUser(user);
+    res.cookie('uid', token); // setting cookie with name 'uid'
     return res.redirect('/');
 }
 
