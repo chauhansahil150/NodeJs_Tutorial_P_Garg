@@ -1,9 +1,11 @@
+require("dotenv").config();
 const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const app = express();
-const port = 8000;
+const PORT = process.env.PORT || 8005;
+const Blog = require('./models/blog');
 
 //middleware
 const {checkForAuthenticationCookie } = require('./middlewares/auth');
@@ -11,7 +13,7 @@ const {checkForAuthenticationCookie } = require('./middlewares/auth');
 const userRoute = require('./routes/user');
 const blogRoute = require('./routes/blog');
 
-mongoose.connect('mongodb://127.0.0.1:27017/blog-app')
+mongoose.connect(process.env.MONGO_URL)
     .then(() => console.log("mongodb connected"));
 // console.log(path);
 app.set("view engine", "ejs");
@@ -19,17 +21,25 @@ app.set("views", path.resolve('./views'));
 app.use(express());
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser());
+app.use(express.static(path.resolve("./public")));//because by default express does not serve static resources
 
 
 app.use(checkForAuthenticationCookie("token"));
 
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+    const allBlogs = await Blog.find({});
+    if (!req.user) {
+        res.render("home", {
+            blogs: allBlogs,
+        });
+    }
     res.render('home', {
-        user:req.user,
+        user: req.user,
+        blogs: allBlogs,
     });
 })
 
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
-app.listen(port, () => console.log("server started at port :", port));
+app.listen(PORT, () => console.log("server started at port :", PORT));
